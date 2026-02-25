@@ -1,0 +1,85 @@
+{
+  lib,
+  ...
+}:
+let
+  inherit (lib)
+  throwIf
+  types
+  warnIf
+  ;
+
+  errorExample = ''
+    For example:
+
+        outputs = inputs@{ flake-parts, ... }:
+          flake-parts.lib.mkFlake { inherit inputs; } { /* module */ };
+
+    To avoid an infinite recursion, *DO NOT* pass `self.inputs` and
+    *DO NOT* pass `inherit (self) inputs`, but pass the output function
+    arguments as `inputs` like above.
+  '';
+
+  flake-mycelium-lib = rec {
+    evalFlakeModule = 
+      args@
+      { inputs ? self.inputs
+      , specialArgs ? { }
+
+        # legacy
+      , self ? inputs.self or (throw ''
+          When invoking flake-mycelium, you must pass all the flake output arguments,
+          and not just `self.inputs`.
+
+          ${errorExample}
+        '')
+      , moduleLocation ? "${self.outPath}/flake.nix"
+      }:
+      let
+        inputsPos = builtins.unsafeGetAttrPos "inputs" args;
+        errorLocation =
+          # Best case: user makes it explicit
+          args.moduleLocation or (
+            # Slightly worse: Nix does not technically commit to unsafeGetAttrPos semantics
+            if inputsPos != null
+            then inputsPos.file
+            # Slightly worse: self may not be valid when an error occurs
+            else if args?inputs.self.outPath
+            then args.inputs.self.outPath + "/flake.nix"
+            # Fallback
+            else "<mkMycelium argument>"
+          );
+      in
+      throwIf
+        (!args?self && !args?inputs) ''
+        When invoking flake-parts, you must pass in the flake output arguments.
+
+        ${errorExample}
+      ''
+        warnIf
+        (!args?inputs) ''
+        When invoking flake-parts, it is recommended to pass all the flake output
+        arguments in the `inputs` parameter. If you only pass `self`, it's not
+        possible to use the `inputs` module argument in the module `imports`.
+
+        Please pass the output function arguments. ${errorExample}
+      ''
+      (module:
+      lib.evalModules {
+        specialArgs = {
+          inherit self flake-mycelium-lib moduleLocation;
+          inputs = args.inputs or /* legacy, warned above */ self.inputs;
+        } // specialArgs;
+        modules = [ ./all-modules.nix (lib.setDefaultModuleLocation errorLocation module) ];
+        class = "flake";
+      }
+      );
+
+      mkMycelium = args: module:
+        let
+          eval = flake-mycelium-lib.evalFlakeModule args module;
+        in
+        eval.config.flake;
+  };
+in
+flake-mycelium-lib
