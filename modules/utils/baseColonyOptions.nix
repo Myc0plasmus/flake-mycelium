@@ -5,7 +5,7 @@ let
     types
     ;
 in
-{ config, name, ... }:
+{ config, ... }:
 {
   options = {
     system = mkOption {
