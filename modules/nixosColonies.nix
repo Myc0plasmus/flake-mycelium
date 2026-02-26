@@ -10,7 +10,7 @@ let
     mkOption
     types
     ;
-  inherit (import ./utils { inherit lib;}) baseColonyModule ;
+  inherit (import ./utils { inherit lib; inherit inputs;}) baseColonyModule ;
 in
 {
   options = {
