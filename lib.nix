@@ -70,7 +70,7 @@ let
           inherit self flake-mycelium-lib moduleLocation;
           inputs = args.inputs or /* legacy, warned above */ self.inputs;
         } // specialArgs;
-        modules = [ ./all-modules.nix (lib.setDefaultModuleLocation errorLocation module) ];
+        modules = [ ./modules (lib.setDefaultModuleLocation errorLocation module) ];
         class = "flake";
       }
       );
@@ -79,7 +79,7 @@ let
         let
           eval = flake-mycelium-lib.evalFlakeModule args module;
         in
-        eval.config.flake;
+        eval.config.mycelium;
   };
 in
 flake-mycelium-lib
