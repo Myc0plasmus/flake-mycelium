@@ -1,4 +1,9 @@
-{ lib}:
+{
+  lib,
+  inputs,
+  ...
+}:
+
 {
   baseColonyModule = import ./baseColonyOptions.nix { inherit lib;};
 }
