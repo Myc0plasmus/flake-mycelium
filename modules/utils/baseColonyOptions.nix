@@ -1,11 +1,13 @@
 {
   lib,
+  inputs,
   ...
 }:
 
 let
   inherit (lib)
     mkOption
+    mkDefault
     types
     ;
 in
@@ -27,5 +29,11 @@ in
       type = with types; attrsOf anything;
       default = { };
     };
+    pkgs = mkOption {
+      type = types.pkgs;
+    };
+  };
+  config = {
+    pkgs = mkDefault inputs.nixpkgs.legacyPackages.${config.system};
   };
 }

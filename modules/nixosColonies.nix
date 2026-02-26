@@ -35,7 +35,7 @@ in
             modules = colony.modules;
             specialArgs =
               colony.specialArgs
-              // { protoHost = colony.protoHost; };
+              // { protoHost = colony.protoHost; pkgs = colony.pkgs; };
           })
         config.mycelium.nixosColonies;
   };
