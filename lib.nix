@@ -71,7 +71,7 @@ let
           inputs = args.inputs or /* legacy, warned above */ self.inputs;
         } // specialArgs;
         modules = [ ./modules (lib.setDefaultModuleLocation errorLocation module) ];
-        class = "flake";
+        class = "mycelium";
       }
       );
 
