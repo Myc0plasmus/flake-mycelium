@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   ...
@@ -31,7 +32,7 @@ in
         mkHost =
           hostname: options:
 
-          options.nixpkgs.lib.nixosSystem {
+          inputs.nixpkgs.lib.nixosSystem {
             inherit (options)
               system
               modules
