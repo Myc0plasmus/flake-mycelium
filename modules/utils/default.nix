@@ -5,5 +5,5 @@
 }:
 
 {
-  baseColonyModule = import ./baseColonyOptions.nix { inherit lib;};
+  baseColonyModule = import ./baseColonyOptions.nix { inherit lib; inherit inputs;};
 }
