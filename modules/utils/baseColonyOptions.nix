@@ -29,8 +29,8 @@ in
     };
   };
   config = {
-    specialArgs = {
-      inherit (config) protoHost;
+    specialArgs = config.specialArgs // {
+      protoHost = config.protoHost;
     };
   };
 }
