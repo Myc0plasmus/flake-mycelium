@@ -28,9 +28,4 @@ in
       default = { };
     };
   };
-  config = {
-    specialArgs = config.specialArgs // {
-      protoHost = config.protoHost;
-    };
-  };
 }

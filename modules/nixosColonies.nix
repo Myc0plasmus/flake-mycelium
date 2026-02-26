@@ -28,19 +28,16 @@ in
 
   config = {
     mycelium.nixosConfigurations =
-      let
-        mkHost =
-          hostname: options:
-
+      lib.mapAttrs
+        (hostname: colony:
           inputs.nixpkgs.lib.nixosSystem {
-            inherit (options)
-              system
-              modules
-              specialArgs
-              ;
-          };
-      in
-      lib.mapAttrs mkHost config.mycelium.nixosColonies;
+            system = colony.system;
+            modules = colony.modules;
+            specialArgs =
+              colony.specialArgs
+              // { protoHost = colony.protoHost; };
+          })
+        config.mycelium.nixosColonies;
   };
 
 }
