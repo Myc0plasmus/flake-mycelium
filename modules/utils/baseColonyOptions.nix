@@ -18,7 +18,7 @@ in
       type = types.str;
     };
     modules = mkOption {
-      type = with types; listOf anything;
+      type = with types; listOf deferredModule;
       default = [ ];
     };
     specialArgs = mkOption {
@@ -29,11 +29,11 @@ in
       type = with types; attrsOf anything;
       default = { };
     };
-    pkgs = mkOption {
-      type = types.pkgs;
-    };
+    # pkgs = mkOption {
+    #   type = types.pkgs;
+    # };
   };
-  config = {
-    pkgs = mkDefault inputs.nixpkgs.legacyPackages.${config.system};
-  };
+  # config = {
+  #   pkgs = mkDefault inputs.nixpkgs.legacyPackages.${config.system};
+  # };
 }

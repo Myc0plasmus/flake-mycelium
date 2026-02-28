@@ -12,7 +12,7 @@ in
 {
   options = {
     mycelium.moduleSpores = mkOption {
-      type = with types; attrsOf anything;
+      type = with types; lazyAttrsOf raw;
       default = { };
     };
   };

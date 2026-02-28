@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ inputs, config, lib, ... }:
 let
   inherit (lib)
     mkOption
@@ -33,4 +33,5 @@ in
       '';
     };
   };
+
 }
