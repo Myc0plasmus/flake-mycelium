@@ -33,7 +33,8 @@ let
 
           ${errorExample}
         '')
-      , moduleLocation ? "${self.outPath}/flake.nix"
+      , moduleLocation ? "${self.outPath}/flake.nix",
+      sporeSpecies ? []
       }:
       let
         inputsPos = builtins.unsafeGetAttrPos "inputs" args;
@@ -67,7 +68,7 @@ let
       (module:
       lib.evalModules {
         specialArgs = {
-          inherit self flake-mycelium-lib moduleLocation;
+          inherit self flake-mycelium-lib moduleLocation sporeSpecies;
           inputs = args.inputs or /* legacy, warned above */ self.inputs;
         } // specialArgs;
         modules = [ ./modules (lib.setDefaultModuleLocation errorLocation module) ];

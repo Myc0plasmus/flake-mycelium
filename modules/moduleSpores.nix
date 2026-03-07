@@ -1,5 +1,6 @@
 { 
 lib,
+sporeSpecies,
 ...
 }:
 
@@ -11,9 +12,16 @@ let
 in
 {
   options = {
-    mycelium.moduleSpores = mkOption {
-      type = with types; lazyAttrsOf raw;
-      default = { };
-    };
+
+    mycelium.moduleSpores = builtins.listToAttrs (
+    map (sporeSpeciesName: 
+    {
+      name = sporeSpeciesName;
+      value = mkOption {
+        type = with types; attrsOf deferredModule;
+        default = {};
+      };
+    }) sporeSpecies );
+
   };
 }
