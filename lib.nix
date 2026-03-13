@@ -21,6 +21,72 @@ let
   '';
 
   flake-mycelium-lib = rec {
+    removeNixSuffix = name:
+      lib.removeSuffix ".nix" name;
+
+  growMycelium =
+    { modulesPath, blacklist, underBlacklist ? false }:
+
+    let
+      entries = builtins.readDir modulesPath;
+
+      results =
+        lib.mapAttrsToList
+          (name: type:
+            let
+              fullPath = modulesPath + "/${name}";
+            in
+            if type == "directory" then
+              let 
+                nextUnderBlacklist = underBlacklist || lib.elem name blacklist;
+                r = growMycelium {
+                  modulesPath = fullPath;
+                  inherit blacklist;
+                  underBlacklist = nextUnderBlacklist;
+                };
+              in
+              if nextUnderBlacklist then
+                {
+                  spores = {};
+                  colonies = r.colonyModules;
+                }
+              else
+                {
+                  spores = { ${name} = r.moduleSpores; };
+                  colonies = r.colonyModules;
+                } 
+
+            else if type == "regular" && lib.hasSuffix ".nix" name then
+              if underBlacklist then
+                {
+                  spores = {};
+                  colonies = [ fullPath ];
+                }
+              else
+                {
+                  spores = {
+                    ${removeNixSuffix name} = fullPath;
+                  };
+                  colonies = [];
+                }
+
+            else
+              {
+                spores = {};
+                colonies = [];
+              }
+          )
+          entries;
+
+    in {
+      moduleSpores =
+        lib.foldl' lib.recursiveUpdate {}
+          (map (r: r.spores) results);
+
+      colonyModules =
+        lib.concatLists (map (r: r.colonies) results);
+    };
+    
     evalFlakeModule = 
       args@
       { inputs ? self.inputs
@@ -34,7 +100,7 @@ let
           ${errorExample}
         '')
       , moduleLocation ? "${self.outPath}/flake.nix",
-      sporeSpecies ? []
+        moduleSpores,
       }:
       let
         inputsPos = builtins.unsafeGetAttrPos "inputs" args;
@@ -68,7 +134,7 @@ let
       (module:
       lib.evalModules {
         specialArgs = {
-          inherit self flake-mycelium-lib moduleLocation sporeSpecies;
+          inherit self flake-mycelium-lib moduleLocation moduleSpores;
           inputs = args.inputs or /* legacy, warned above */ self.inputs;
         } // specialArgs;
         modules = [ ./modules (lib.setDefaultModuleLocation errorLocation module) ];
@@ -76,9 +142,13 @@ let
       }
       );
 
-      mkMycelium = args: module:
+      mkMycelium = args: module: colonyDirs:
         let
-          eval = flake-mycelium-lib.evalFlakeModule args module;
+          grownMycelium = growMycelium {
+            modulesPath = module;
+            blacklist = colonyDirs;
+          };
+          eval = evalFlakeModule (args // {moduleSpores = grownMycelium.moduleSpores;}) { imports=grownMycelium.colonyModules; };
         in
         eval.config.mycelium;
   };

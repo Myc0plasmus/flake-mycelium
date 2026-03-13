@@ -2,6 +2,7 @@
   inputs,
   config,
   lib,
+  moduleSpores,
   ...
 }:
 
@@ -35,7 +36,7 @@ in
             modules = colony.modules;
             specialArgs =
               colony.specialArgs
-              // { protoHost = colony.protoHost; };
+              // { protoHost = colony.protoHost; inherit inputs; inherit moduleSpores; };
           })
         config.mycelium.nixosColonies;
   };
