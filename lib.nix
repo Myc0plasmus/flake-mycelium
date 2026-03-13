@@ -37,25 +37,18 @@ let
               fullPath = modulesPath + "/${name}";
             in
             if type == "directory" then
-              let 
-                nextUnderBlacklist = underBlacklist || lib.elem name blacklist;
+              let
                 r = growMycelium {
                   modulesPath = fullPath;
                   inherit blacklist;
-                  underBlacklist = nextUnderBlacklist;
+                  underBlacklist = underBlacklist || lib.elem name blacklist;
                 };
               in
-              if nextUnderBlacklist then
-                {
-                  spores = {};
-                  colonies = r.colonyModules;
-                }
-              else
-                {
-                  spores = { ${name} = r.moduleSpores; };
-                  colonies = r.colonyModules;
-                } 
-
+              {
+                spores= r.moduleSpores;
+                colonies = r.colonyModules;
+              }
+              
             else if type == "regular" && lib.hasSuffix ".nix" name then
               if underBlacklist then
                 {
@@ -63,10 +56,11 @@ let
                   colonies = [ fullPath ];
                 }
               else
+                let 
+                  file = import fullPath;
+                in
                 {
-                  spores = {
-                    ${removeNixSuffix name} = fullPath;
-                  };
+                  spores = file.moduleSpores or {};
                   colonies = [];
                 }
 
